@@ -1,41 +1,47 @@
+
 package idgs13.asesorias.microservicios.entity;
 
-import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
-/**
- * Entidad principal que representa una División en la base de datos.
- */
+import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
+
+
 @Entity
 @Table(name = "divisiones")
 public class Division {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(nullable = false, length = 100)
-    private String nombre;
 
-    // Campo para el borrado lógico (habilitado/deshabilitado)
-    @Column(nullable = false)
-    private Boolean estado = true;
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;
 
-    // Relación OneToMany con ProgramaEducativo
-    @OneToMany(mappedBy = "division", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<ProgramaEducativo> programasEducativos = new ArrayList<>();
 
-    // --- Getters y Setters ---
+@Column(nullable = false)
+private String nombre;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+@Column(nullable = false, unique = true)
+private String clave;
 
-    public Boolean getEstado() { return estado; }
-    public void setEstado(Boolean estado) { this.estado = estado; }
 
-    public List<ProgramaEducativo> getProgramasEducativos() { return programasEducativos; }
-    public void setProgramasEducativos(List<ProgramaEducativo> programasEducativos) { this.programasEducativos = programasEducativos; }
+@Column(nullable = false)
+private Boolean estatus = true;
+
+
+@OneToMany(mappedBy = "division", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+private Set<ProgramaEducativo> programas = new HashSet<>();
+
+
+// getters y setters
+public Long getId() { return id; }
+public void setId(Long id) { this.id = id; }
+public String getNombre() { return nombre; }
+public void setNombre(String nombre) { this.nombre = nombre; }
+public String getClave() { return clave; }
+public void setClave(String clave) { this.clave = clave; }
+public Boolean getEstatus() { return estatus; }
+public void setEstatus(Boolean estatus) { this.estatus = estatus; }
+public Set<ProgramaEducativo> getProgramas() { return programas; }
+public void setProgramas(Set<ProgramaEducativo> programas) { this.programas = programas; }
 }

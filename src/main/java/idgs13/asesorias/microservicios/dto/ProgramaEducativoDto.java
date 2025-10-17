@@ -6,9 +6,9 @@ public class ProgramaEducativoDto {
 
     public ProgramaEducativoDto() {}
 
-    public ProgramaEducativoDto(Long id, String nombre) {
-        this.id = id;
-        this.nombre = nombre;
+    public ProgramaEducativoDto(Long id, String nombre) { 
+        this.id = id; 
+        this.nombre = nombre; 
     }
 
     public Long getId() { return id; }

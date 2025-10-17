@@ -1,75 +1,63 @@
 package idgs13.asesorias.microservicios.Controller;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import idgs13.asesorias.microservicios.dto.*;
+import idgs13.asesorias.microservicios.service.DivisionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import idgs13.asesorias.microservicios.dto.DivisionDto;
-import idgs13.asesorias.microservicios.dto.ProgramaEducativoDto;
-import idgs13.asesorias.microservicios.entity.Division;
-import idgs13.asesorias.microservicios.entity.ProgramaEducativo;
-import idgs13.asesorias.microservicios.service.DivisionService;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/divisiones")
 public class DivisionController {
 
-    @Autowired
-    private DivisionService divisionService;
+    private final DivisionService divisionService;
 
-    // --- Helper para mapear Division -> DivisionViewDto ---
-    private DivisionDto convertToViewDto(Division division) {
-        List<ProgramaEducativoDto> peDtos = division.getProgramasEducativos().stream()
-                .map(pe -> new ProgramaEducativoDto(pe.getId(), pe.getNombre()))
-                .collect(Collectors.toList());
-        return new DivisionDto(division.getId(), division.getNombre(), division.getEstado(), peDtos);
+    public DivisionController(DivisionService divisionService) {
+        this.divisionService = divisionService;
     }
 
-    // --- GET: Listar todas las divisiones ---
-    @GetMapping
-    public ResponseEntity<List<DivisionDto>> getAllDivisiones() {
-        List<Division> divisiones = divisionService.buscarTodos();
-        List<DivisionDto> dtos = divisiones.stream()
-                .map(this::convertToViewDto)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
-    }
-
-    // --- GET: Obtener división por ID ---
-    @GetMapping("/{id}")
-    public ResponseEntity<DivisionDto> getDivisionById(@PathVariable Long id) {
-        Division division = divisionService.buscarPorId(id);
-        return ResponseEntity.ok(convertToViewDto(division));
-    }
-
-    // --- POST: Crear nueva división ---
     @PostMapping
-    public ResponseEntity<DivisionDto> createDivision(@RequestBody DivisionDto dto) {
-        Division division = divisionService.crearDivision(dto);
-        return ResponseEntity.ok(convertToViewDto(division));
+    public ResponseEntity<DivisionDto> create(@RequestBody DivisionCreateDto dto) {
+        return ResponseEntity.ok(divisionService.createDivision(dto));
     }
 
-    // --- PUT: Actualizar división existente ---
     @PutMapping("/{id}")
-    public ResponseEntity<DivisionDto> updateDivision(@PathVariable Long id, @RequestBody DivisionDto dto) {
-        Division division = divisionService.actualizarDivision(id, dto);
-        return ResponseEntity.ok(convertToViewDto(division));
+    public ResponseEntity<DivisionDto> update(@PathVariable Long id, @RequestBody DivisionUpdateDto dto) {
+        return ResponseEntity.ok(divisionService.updateDivision(id, dto));
     }
 
-    // --- PATCH: Baja lógica ---
-    @PatchMapping("/{id}/baja-logica")
-    public ResponseEntity<DivisionDto> bajaLogicaDivision(@PathVariable Long id) {
-        Division division = divisionService.bajaLogicaDivision(id);
-        return ResponseEntity.ok(convertToViewDto(division));
-    }
-
-    // --- DELETE: Baja física ---
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarDivision(@PathVariable Long id) {
-        divisionService.eliminarDivision(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        divisionService.deleteDivision(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/estatus")
+    public ResponseEntity<DivisionDto> changeStatus(@PathVariable Long id, @RequestParam Boolean estatus) {
+        return ResponseEntity.ok(divisionService.changeStatus(id, estatus));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DivisionDto> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(divisionService.getById(id));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<DivisionDto>> getAll() {
+        return ResponseEntity.ok(divisionService.getAll());
+    }
+
+    // Endpoint para que otros microservicios pidan varias divisiones por ids (POST)
+    @PostMapping("/byid")
+    public ResponseEntity<List<DivisionDto>> getByIds(@RequestBody List<Long> ids) {
+        List<DivisionDto> all = divisionService.getAll();
+        return ResponseEntity.ok(
+            all.stream()
+                .filter(d -> ids.contains(d.getId()))
+                .collect(Collectors.toList())
+        );
     }
 }
